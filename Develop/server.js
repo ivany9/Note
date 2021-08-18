@@ -11,82 +11,109 @@ const app = express();
 const PORT = 3001;
 
 app.use(express.json());//add req.body
+var uniqid = require('uniqid');// ad id
 
 app.use(express.static('public'));
 
 
 
+app.get("/notes",(req,res) =>{
+    res.sendFile(path.join(__dirname, 'public/notes.html'));
+});
 
-
-
-fs.readFile("db/db.json","utf8", (err, data) => {
-
-  if (err);
-  {
-    console.error(err);
-
-  }
-
-  var notes = JSON.parse(data);
-  
  
 
-  app.get("/api/notes",(req, res)=> {
-      res.json(notes);
-  });
+
+
+
+
+  
+app.get('/api/notes',(req, res)=> {
+    fs.readFile("db/db.json","utf8", (err, data) => {
+        if (err) {throw err}
+        else { 
+        const notes= JSON.parse(data);
+          res.json(notes);
+        }
+    });
+});
+
+
+ 
+
 
    
 
   app.post("/api/notes",(req, res)=> {
-      let newNote = req.body;
-       res.json(newNote);
-      notes.push(newNote);
-      writeNote();
-      return console.log("Added new note: "+newNote.title);
-  });
+
+     
+     const {title,text} = req.body;
+     const newNote={title,text, id:uniqid()};
+     res.json(newNote);
+     fs.readFile("./db/db.json","utf8", (err, data) => {
+        if (err) {throw err}
+        else {
+          const notes= JSON.parse(data);
+          notes.push(newNote); 
+          writeNote(notes);
+             }
+  
+  
+    });
+});
 
 
- 
 
-  app.get("/api/notes/:id",(req,res)=>{
-      res.json(notes[req.params.id]);
-      console.log(params.id);
 
-  });
 
   app.delete("/api/notes/:id",(req, res)=>{
-      notes.splice(req.params.id, 1);
-      res.json(notes);
-      writeNote();
-      console.log("Deleted note with id "+req.params.id);
-     
-      
-
-  });
-
-
-  app.get('/notes',(req,res) =>{
-      res.sendFile(path.join(__dirname, 'public/notes.html'));
-  });
+    fs.readFile("./db/db.json","utf8", (err, data) => {
+       // console.log(data);
+        if (err) {throw err}
+        else { 
+          const notes= JSON.parse(data);
+          const newar =notes.findIndex(({id})=>id===req.params.id);
+          if(newar>=0){
+          notes.splice(newar,1);
+          res.json(notes);
+          writeNote(notes);
+          //console.log("Deleted note with id "+req.params.id);      
+        }
+        
+                
+                   
+          
+    }
   
-
-  app.get('*',(req,res)=>{
-      res.sendFile(path.join(__dirname, 'public/index.html'));
-  });
-
- 
-  function writeNote() {
-      fs.writeFile('./db/db.json',JSON.stringify(notes),err => {
-          if (err) throw err;
-          return true;
-      });
-  }
+    })
 
 
 });
 
 
-     
+
+
+
+
+       
+ 
+app.get('*',(req,res)=>{
+    res.sendFile(path.join(__dirname, 'public/index.html'))
+})
+
+ 
+
+          
+
+     function writeNote(notes) {
+        fs.writeFile('./db/db.json',JSON.stringify(notes),err => {
+            if (err) throw err;
+            return true;
+        });
+    }
+
+  
+    
 
       app.listen(PORT, () =>
       console.log(` app listening at http://localhost:${PORT}`));
