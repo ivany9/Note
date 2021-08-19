@@ -55,13 +55,21 @@ app.get('/api/notes',(req, res)=> {
         else {
           const notes= JSON.parse(data);
           notes.push(newNote); 
-          writeNote(notes);
-             }
+          fs.writeFile('./db/db.json',JSON.stringify(notes),err => {
+            if (err) throw err;
+            return true;
+        });
+           //console.log("Deleted note with id "+req.params.id);      
+}
+             })
   
   
     });
-});
 
+
+    app.get('*',(req,res)=>{
+      res.sendFile(path.join(__dirname, 'public/index.html'))
+  })
 
 
 
@@ -76,7 +84,10 @@ app.get('/api/notes',(req, res)=> {
           if(newar>=0){
           notes.splice(newar,1);
           res.json(notes);
-          writeNote(notes);
+          fs.writeFile('./db/db.json',JSON.stringify(notes),err => {
+                    if (err) throw err;
+                    return true;
+                });;
           //console.log("Deleted note with id "+req.params.id);      
         }
         
@@ -97,20 +108,17 @@ app.get('/api/notes',(req, res)=> {
 
        
  
-app.get('*',(req,res)=>{
-    res.sendFile(path.join(__dirname, 'public/index.html'))
-})
 
  
 
           
 
-     function writeNote(notes) {
-        fs.writeFile('./db/db.json',JSON.stringify(notes),err => {
-            if (err) throw err;
-            return true;
-        });
-    }
+    //  function writeNote(notes) {
+    //     fs.writeFile('./db/db.json',JSON.stringify(notes),err => {
+    //         if (err) throw err;
+    //         return true;
+    //     });
+    // }
 
   
     
